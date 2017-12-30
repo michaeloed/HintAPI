@@ -42,6 +42,7 @@ type
 
 	public
 		constructor Create(_parent: HWND; _isBalloon: Boolean = True);
+		destructor Destroy(); override;
 
 		procedure setPosition(_position: TPoint);
 		procedure setTitle(_title: string; _icon: Integer);
@@ -60,9 +61,19 @@ begin
 	ZeroMemory(@FToolInfo, SizeOf(TOOLINFO));
 end;
 
+destructor TTrackingToolTip.Destroy();
+begin
+	if (FHwndTool <> 0) then
+	begin
+		DestroyWindow(FHwndTool);
+		FHwndTool := 0;
+	end;
+	inherited Destroy();
+end;
+
 procedure TTrackingToolTip.initTooltip();
 var
-	tipStyle: Integer;
+	tipStyle: Cardinal;
 begin
 	if (FHwndTool = 0) then
 	begin
@@ -75,7 +86,8 @@ begin
 		// https://msdn.microsoft.com/de-de/library/windows/desktop/hh298405(v=vs.85).aspx
 		FHwndTool := CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, nil,
 								   tipStyle,
-								   CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+								   Integer(CW_USEDEFAULT), Integer(CW_USEDEFAULT),
+								   Integer(CW_USEDEFAULT), Integer(CW_USEDEFAULT),
 								   FParent, 0, HInstance, nil);
 		FToolInfo.cbSize := SizeOf(TOOLINFO);
 		FToolInfo.uFlags := TTF_IDISHWND or TTF_TRACK or TTF_ABSOLUTE;
